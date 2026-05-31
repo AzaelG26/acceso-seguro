@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+body {
+
+    font-family: Arial, sans-serif;
+
+}
+
+.btn {
+
+    background: black;
+
+    color: white;
+
+    padding: 10px 20px;
+
+    border-radius: 5px;
+
+}
