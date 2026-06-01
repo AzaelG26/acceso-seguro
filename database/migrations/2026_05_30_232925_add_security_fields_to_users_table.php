@@ -20,8 +20,11 @@ return new class extends Migration
             $table->timestamp('otp_expires_at')->nullable()->after('otp_code');
         });
 
-        DB::statement("ALTER TABLE users ADD CONSTRAINT check_role CHECK (role IN ('guest', 'user', 'admin'))");
-        DB::statement("ALTER TABLE users ADD CONSTRAINT check_status CHECK (status IN ('active', 'inactive'))");
+        // SQLite doesn't support named constraints on ALTER TABLE
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE users ADD CONSTRAINT check_role CHECK (role IN ('guest', 'user', 'admin'))");
+            DB::statement("ALTER TABLE users ADD CONSTRAINT check_status CHECK (status IN ('active', 'inactive'))");
+        }
 
     }
 
