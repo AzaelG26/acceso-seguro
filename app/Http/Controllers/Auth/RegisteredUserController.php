@@ -26,6 +26,8 @@ class RegisteredUserController extends Controller
     /**
      * Handle an incoming registration request.
      *
+     * All users register as 'guest' by default.
+     * Role elevation is handled by an administrator.
      * @throws \Illuminate\Validation\ValidationException
      */
     public function store(Request $request): RedirectResponse
