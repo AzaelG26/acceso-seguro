@@ -46,6 +46,12 @@ class LoginRequest extends FormRequest
 
         $user = User::where('email', $this->email)->first();
 
+        if ($user->status === 'inactive') {
+            throw ValidationException::withMessages([
+                'email' => 'Tu cuenta está inactiva.',
+            ]);
+        }
+
         if (!$user || ! Hash::check($this->password, $user->password)) {
             RateLimiter::hit($this->throttleKey());
 
@@ -60,11 +66,6 @@ class LoginRequest extends FormRequest
             ]);
         }
 
-        if ($user->status === 'inactive') {
-            throw ValidationException::withMessages([
-                'email' => 'Tu cuenta está inactiva.',
-            ]);
-        }
 
         Log::info('Login successful', [
             'email' => $this->email,
@@ -74,11 +75,11 @@ class LoginRequest extends FormRequest
 
         RateLimiter::clear($this->throttleKey());
 
-        if ($user->IsUser()){
+        if ($user->isUser()){
             session(['auth.id' => $user->id, 'auth.remember' => $this->boolean('remember')]);
-        } elseif ($user->IsAdmin()){
+        } elseif ($user->isAdmin()){
             session(['auth.id' => $user->id, 'auth.remember' => $this->boolean('remember')]);
-        } else if($user->IsGuest()) {
+        } else {
             Auth::login($user, $this->boolean('remember'));
         }
     }
