@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Auth\Events\Registered;
@@ -55,6 +56,11 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
 
         Auth::login($user);
+
+        AuditLog::record('user_registered', 'Se registró como nuevo usuario', $request, [
+            'user_id' => $user->id,
+            'email' => $user->email,
+        ]);
 
         return redirect(RouteServiceProvider::HOME);
     }

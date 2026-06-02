@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Providers\RouteServiceProvider;
 use App\Http\Controllers\Auth\OtpController;
+use App\Models\AuditLog;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -38,6 +39,8 @@ class AuthenticatedSessionController extends Controller
             (new OtpController)->send($user);
             return redirect()->route('otp.show');
         }
+
+        AuditLog::record('login_success', 'Inició sesión correctamente', $request);
 
         return redirect()->intended(RouteServiceProvider::HOME);
     }

@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Providers\RouteServiceProvider;
+use App\Models\AuditLog;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use \Illuminate\Support\Facades\URL;
 
 class OtpController extends Controller
 {
@@ -62,12 +62,22 @@ class OtpController extends Controller
 
         // Check OTP expiration
         if (!$user->otp_expires_at || now()->isAfter($user->otp_expires_at)) {
+            AuditLog::record('otp_expired', 'Intentó usar un código OTP expirado', $request, [
+                'user_id' => $user->id,
+                'email' => $user->email,
+            ]);
+
             return back()->withErrors(['otp' => 'El código expiró.']);
         }
 
         // Verify the code is correct
         if (!password_verify($request->otp, $user->otp_code)) {
             Log::warning('OTP fallido', ['email' => $user->email, 'ip' => $request->ip()]);
+            AuditLog::record('otp_failed', 'Ingresó un código OTP incorrecto', $request, [
+                'user_id' => $user->id,
+                'email' => $user->email,
+            ]);
+
             return back()->withErrors(['otp' => 'Código incorrecto.']);
         }
 
@@ -78,7 +88,13 @@ class OtpController extends Controller
         if ($user->isAdmin()) {
             // Mark that the 2FA (Email OTP) has been passed
             session(['auth.2fa_passed' => true]);
-            
+
+            AuditLog::record('otp_success', 'Admin validó OTP y pasó al flujo TOTP', $request, [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'role' => $user->role,
+            ]);
+
             // Redirect to the 3FA flow (TOTP)
             return redirect()->route('totp.show');
         }
@@ -93,6 +109,11 @@ class OtpController extends Controller
         $user->update(['last_known_ip' => $request->ip()]);
 
         Log::info('OTP exitoso', ['email' => $user->email, 'ip' => $request->ip()]);
+        AuditLog::record('login_success', 'Inició sesión correctamente con OTP', $request, [
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'role' => $user->role,
+        ]);
 
         return redirect()->intended(RouteServiceProvider::HOME);
     }

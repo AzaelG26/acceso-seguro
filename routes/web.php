@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +27,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/audit', [AuditLogController::class, 'index'])->name('audit.index');
+    Route::get('/audit/statistics', [AuditLogController::class, 'statistics'])->name('audit.statistics');
+    Route::get('/audit/{auditLog}', [AuditLogController::class, 'show'])->name('audit.show');
 });
 
 require __DIR__.'/auth.php';

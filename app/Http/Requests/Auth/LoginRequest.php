@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Hash;
+use App\Models\AuditLog;
 use App\Models\User;
 
 class LoginRequest extends FormRequest
@@ -57,6 +58,10 @@ class LoginRequest extends FormRequest
                 'timestamp' => now(),
             ]);
 
+            AuditLog::record('login_failed', 'Intento de login fallido', $this, [
+                'email' => $this->email,
+            ]);
+
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),
             ]);
@@ -68,6 +73,11 @@ class LoginRequest extends FormRequest
                 'email'     => $this->email,
                 'ip'        => $this->ip(),
                 'timestamp' => now(),
+            ]);
+
+            AuditLog::record('inactive_account_login', 'Intentó iniciar sesión con una cuenta inactiva', $this, [
+                'user_id' => $user->id,
+                'email' => $user->email,
             ]);
 
             throw ValidationException::withMessages([

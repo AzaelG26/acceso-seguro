@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\AuditLog;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use App\Providers\RouteServiceProvider;
@@ -58,6 +59,11 @@ class TotpController extends Controller
         $secret = session('totp_setup_secret');
 
         if (!$secret) {
+            AuditLog::record('totp_setup_expired', 'Expiró la sesión de configuración TOTP', $request, [
+                'user_id' => $user->id,
+                'email' => $user->email,
+            ]);
+
             return redirect()->route('totp.setup')->withErrors(['totp' => 'La sesión de configuración expiró. Intenta de nuevo.']);
         }
 
@@ -86,6 +92,11 @@ class TotpController extends Controller
                 'ip'        => $request->ip(),
                 'timestamp' => now(),
             ]);
+            AuditLog::record('totp_setup_success', 'Configuró TOTP correctamente', $request, [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'role' => $user->role,
+            ]);
 
             return redirect()->intended(RouteServiceProvider::HOME);
         }
@@ -95,6 +106,10 @@ class TotpController extends Controller
             'email'     => $user->email,
             'ip'        => $request->ip(),
             'timestamp' => now(),
+        ]);
+        AuditLog::record('totp_setup_failed', 'Falló la configuración TOTP', $request, [
+            'user_id' => $user->id,
+            'email' => $user->email,
         ]);
 
         return back()->withErrors(['totp' => 'El código es incorrecto. Intenta de nuevo.']);
@@ -147,6 +162,11 @@ class TotpController extends Controller
                 'ip'        => $request->ip(),
                 'timestamp' => now(),
             ]);
+            AuditLog::record('login_success', 'Inició sesión correctamente con TOTP', $request, [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'role' => $user->role,
+            ]);
 
             return redirect()->intended(RouteServiceProvider::HOME);
         }
@@ -156,6 +176,10 @@ class TotpController extends Controller
             'email'     => $user->email,
             'ip'        => $request->ip(),
             'timestamp' => now(),
+        ]);
+        AuditLog::record('totp_failed', 'Ingresó un código TOTP incorrecto', $request, [
+            'user_id' => $user->id,
+            'email' => $user->email,
         ]);
 
         return back()->withErrors(['totp' => 'El código es incorrecto. Intenta de nuevo.']);
