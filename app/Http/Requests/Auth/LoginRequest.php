@@ -46,18 +46,14 @@ class LoginRequest extends FormRequest
 
         $user = User::where('email', $this->email)->first();
 
-        if ($user->status === 'inactive') {
-            throw ValidationException::withMessages([
-                'email' => 'Tu cuenta está inactiva.',
-            ]);
-        }
 
         if (!$user || ! Hash::check($this->password, $user->password)) {
             RateLimiter::hit($this->throttleKey());
 
             Log::warning('Login failed', [
-                'email' => $this->email,
-                'ip' => $this->ip(),
+                'event'     => 'AUTH_LOGIN_FAILED',
+                'email'     => $this->email,
+                'ip'        => $this->ip(),
                 'timestamp' => now(),
             ]);
 
@@ -66,10 +62,23 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        if ($user->status === 'inactive') {
+            Log::warning('Login attempt on inactive account', [
+                'event'     => 'AUTH_INACTIVE_ACCOUNT',
+                'email'     => $this->email,
+                'ip'        => $this->ip(),
+                'timestamp' => now(),
+            ]);
+
+            throw ValidationException::withMessages([
+                'email' => 'Tu cuenta está inactiva.',
+            ]);
+        }
 
         Log::info('Login successful', [
             'email' => $this->email,
-            'ip' => $this->ip(),
+            'role'  => $user->role,
+            'ip'    => $this->ip(),
             'timestamp' => now(),
         ]);
 
