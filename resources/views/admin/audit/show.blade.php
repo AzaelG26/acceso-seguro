@@ -14,7 +14,7 @@
     <div class="py-8">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             @php
-    $eventTime = $auditLog->{$timestampColumn};
+    $eventTime = $auditLog->{$timestampColumn}?->timezone(config('app.timezone'));
 
     $eventClass = match($auditLog->event) {
         'created' => 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',

@@ -104,7 +104,7 @@
             <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                 @forelse ($logs as $log)
                     @php
-                        $eventTime = $log->{$timestampColumn};
+                        $eventTime = $log->{$timestampColumn}?->timezone(config('app.timezone'));
 
                         $eventClass = match($log->event) {
                             'created' => 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
