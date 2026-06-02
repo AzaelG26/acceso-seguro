@@ -26,5 +26,18 @@
                 {{ $slot }}
             </div>
         </div>
+
+        <!-- Prevenir doble envío de formularios globalmente -->
+        <script>
+            document.addEventListener('submit', function(e) {
+                if (e.target && e.target.tagName === 'FORM') {
+                    const submitBtn = e.target.querySelector('button[type="submit"], button:not([type="button"])');
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    }
+                }
+            });
+        </script>
     </body>
 </html>
