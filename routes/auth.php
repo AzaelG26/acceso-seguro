@@ -20,6 +20,10 @@ RateLimiter::for('register', function (Request $request) {
     return Limit::perMinute(3)->by($request->ip());
 });
 
+RateLimiter::for('otp', function (Request $request) {
+    return Limit::perMinute(5)->by(session('auth.id') . '|' . $request->ip());
+});
+
 Route::middleware('signed')->group(function(){
     Route::get('ip/approve', [OtpController::class, 'approveIp'])
     ->name('ip.approve');
@@ -56,7 +60,8 @@ Route::middleware('guest')->group(function () {
                 ->name('otp.show');
 
     Route::post('otp', [OtpController::class, 'verify'])
-                ->name('otp.verify');
+                ->name('otp.verify')
+                ->middleware('throttle:otp');
 
 });
 
