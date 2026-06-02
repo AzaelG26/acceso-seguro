@@ -74,46 +74,13 @@ class OtpController extends Controller
         // Invalidate the OTP after use (one-time use)
         $user->update(['otp_code' => null, 'otp_expires_at' => null]);
 
-        // Third factor for admin: IP verification
-        if($user->IsAdmin()){
-            if($user->last_known_ip && $user->last_known_ip !== $request->ip()){
-
-                // Generate signed links to approve or reject access
-                $approveUrl = URL::signedRoute('ip.approve',[
-                    'user' => $user->id,
-                    'ip'   => $request->ip(),
-                ]);
-
-                $blockUrl = URL::signedRoute('ip.block', [
-                    'user' => $user->id,
-                ]);
-
-                // Notify admin by email with action links
-                Mail::raw(
-                    "Se detectó un inicio de sesión desde una IP desconocida.\n\n" .
-                    "IP: {$request->ip()}\n" .
-                    "Hora: " . now() . "\n\n" .
-                    "¿Fuiste tú?\n" .
-                    "Aprobar acceso: $approveUrl\n\n" .
-                    "No fui yo: $blockUrl",
-                    function ($message) use ($user) {
-                        $message->to($user->email)->subject('Inicio de sesión desde IP desconocida');
-                    }
-                );
-
-
-                Log::warning('Admin login desde IP desconocida', [
-                    'email'       => $user->email,
-                    'ip_conocida' => $user->last_known_ip,
-                    'ip_actual'   => $request->ip(),
-                ]);
-                // return back()->withErrors(['otp' => 'Acceso denegado. IP no reconocida.']);
-
-                session()->forget(['auth.id', 'auth.remember']);
-
-                return redirect()->route('login')->with('status', 'IP desconocida detectada. Revisa tu correo para aprobar el acceso.');
-
-            }
+        // Third factor for admin: TOTP (Google Authenticator)
+        if ($user->isAdmin()) {
+            // Mark that the 2FA (Email OTP) has been passed
+            session(['auth.2fa_passed' => true]);
+            
+            // Redirect to the 3FA flow (TOTP)
+            return redirect()->route('totp.show');
         }
 
         $remember = session('auth.remember');
@@ -128,41 +95,6 @@ class OtpController extends Controller
         Log::info('OTP exitoso', ['email' => $user->email, 'ip' => $request->ip()]);
 
         return redirect()->intended(RouteServiceProvider::HOME);
-    }
-
-    /**
-     * Approve an unknown IP for the admin.
-     * Accessed via a signed link sent by email.
-     * Registers the new IP as known for future logins.
-     */
-    public function approveIp(Request $request)
-    {
-        $user = User::findOrFail($request->user);
-        $user->update(['last_known_ip' => $request->ip]);
-
-        Log::info('IP aprobada por admin', [
-            'email' => $user->email,
-            'ip'    => $request->ip,
-        ]);
-
-        return redirect()->route('login')->with('status', 'IP aprobada. Ya puedes iniciar sesión desde esta ubicación.');
-    }
-
-    /**
-     * Reject an access attempt from an unknown IP.
-     * Accessed via a signed link sent by email.
-     * Logs the unauthorized attempt.
-     */
-    public function blockIp(Request $request)
-    {
-        $user = User::findOrFail($request->user);
-
-        Log::critical('Acceso no autorizado rechazado', [
-            'email'      => $user->email,
-            'ip_intruso' => $request->ip,
-        ]);
-
-        return redirect()->route('login')->with('status', 'Acceso rechazado.');
     }
 
 }
