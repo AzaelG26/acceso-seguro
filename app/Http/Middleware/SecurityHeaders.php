@@ -32,6 +32,9 @@ class SecurityHeaders
         // Solo cargar recursos del mismo origen
         $response->headers->set('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'");
 
+        // Forzar siempre conexiones HTTPS (HSTS) - 1 año de duración
+        $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+
         return $response;
     }
 }
