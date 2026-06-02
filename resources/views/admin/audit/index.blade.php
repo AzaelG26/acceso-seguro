@@ -173,6 +173,14 @@
     </div>
 </div>
 
+@if ($logs->hasPages())
+    <div class="mt-6">
+        {{ $logs->links() }}
+    </div>
+@endif
+
+
+
         </div>
     </div>
 </x-app-layout>

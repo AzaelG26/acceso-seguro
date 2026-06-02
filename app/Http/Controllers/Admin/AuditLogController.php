@@ -49,7 +49,7 @@ class AuditLogController extends Controller
                 });
             })
             ->latest($timestampColumn)
-            ->paginate(20)
+            ->paginate(5)
             ->withQueryString();
 
         $events = $hasEvent
