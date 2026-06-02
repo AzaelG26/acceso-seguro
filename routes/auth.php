@@ -24,13 +24,7 @@ RateLimiter::for('otp', function (Request $request) {
     return Limit::perMinute(5)->by(session('auth.id') . '|' . $request->ip());
 });
 
-Route::middleware('signed')->group(function(){
-    Route::get('ip/approve', [OtpController::class, 'approveIp'])
-    ->name('ip.approve');
-    Route::get('ip/block', [OtpController::class, 'blockIp'])
-    ->name('ip.block');
 
-});
 
 
 Route::middleware('guest')->group(function () {
@@ -61,6 +55,19 @@ Route::middleware('guest')->group(function () {
 
     Route::post('otp', [OtpController::class, 'verify'])
                 ->name('otp.verify')
+                ->middleware('throttle:otp');
+
+    Route::get('totp/setup', [App\Http\Controllers\Auth\TotpController::class, 'setup'])
+                ->name('totp.setup');
+                
+    Route::post('totp/setup', [App\Http\Controllers\Auth\TotpController::class, 'confirmSetup'])
+                ->name('totp.confirm');
+
+    Route::get('totp', [App\Http\Controllers\Auth\TotpController::class, 'show'])
+                ->name('totp.show');
+
+    Route::post('totp', [App\Http\Controllers\Auth\TotpController::class, 'verify'])
+                ->name('totp.verify')
                 ->middleware('throttle:otp');
 
 });
