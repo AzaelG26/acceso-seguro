@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\View\View;
 
 
@@ -52,6 +53,10 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        // Borrar explícitamente las cookies del navegador para evitar que quede "basura"
+        $cookieSession = Cookie::forget(config('session.cookie'));
+        $cookieXsrf = Cookie::forget('XSRF-TOKEN');
+
+        return redirect('/')->withCookie($cookieSession)->withCookie($cookieXsrf);
     }
 }
