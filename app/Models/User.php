@@ -26,6 +26,7 @@ class User extends Authenticatable
         'last_known_ip',
         'otp_code',
         'otp_expires_at',
+        'google2fa_secret',
     ];
 
     /**
