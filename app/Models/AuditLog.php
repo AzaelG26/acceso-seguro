@@ -29,11 +29,20 @@ class AuditLog extends Model
         'occurred_at' => 'datetime',
     ];
 
+    /**
+     * Obtiene el usuario asociado con este registro de auditoría.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Guarda un evento de auditoría usando el contexto de la petición.
+     *
+     * El método es defensivo para que la autenticación y las acciones de usuario
+     * sigan funcionando aunque la tabla de auditoría no esté migrada.
+     */
     public static function record(string $event, string $description, ?Request $request = null, array $metadata = []): ?self
     {
         $user = $request?->user();

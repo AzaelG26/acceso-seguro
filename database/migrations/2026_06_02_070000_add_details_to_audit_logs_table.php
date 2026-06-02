@@ -6,6 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Agrega columnas faltantes de auditoría a una tabla antigua existente.
+     */
     public function up(): void
     {
         if (! Schema::hasTable('audit_logs')) {
@@ -43,6 +46,9 @@ return new class extends Migration
         });
     }
 
+    /**
+     * Esta migración es intencionalmente no destructiva.
+     */
     public function down(): void
     {
         //

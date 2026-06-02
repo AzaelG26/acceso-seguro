@@ -13,7 +13,7 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
+     * Los atributos que se pueden asignar masivamente.
      *
      * @var array<int, string>
      */
@@ -30,7 +30,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Los atributos que deben ocultarse al serializar.
      *
      * @var array<int, string>
      */
@@ -41,7 +41,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be cast.
+     * Los atributos que deben convertirse a tipos específicos.
      *
      * @var array<string, string>
      */
@@ -51,21 +51,33 @@ class User extends Authenticatable
         'otp_expires_at' => 'datetime',
     ];
 
+    /**
+     * Indica si el usuario tiene rol de administrador.
+     */
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
     }
 
+    /**
+     * Indica si el usuario tiene rol de usuario normal.
+     */
     public function isUser(): bool
     {
         return $this->role === 'user';
     }
 
+    /**
+     * Indica si el usuario tiene rol de invitado.
+     */
     public function isGuest(): bool
     {
         return $this->role === 'guest';
     }
 
+    /**
+     * Indica si la cuenta del usuario está activa.
+     */
     public function isActive(): bool
     {
         return $this->status === 'active';

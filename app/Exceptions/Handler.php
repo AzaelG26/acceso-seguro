@@ -8,7 +8,7 @@ use Throwable;
 class Handler extends ExceptionHandler
 {
     /**
-     * The list of the inputs that are never flashed to the session on validation exceptions.
+     * Lista de campos que nunca deben guardarse en sesión al fallar una validación.
      *
      * @var array<int, string>
      */
@@ -19,7 +19,7 @@ class Handler extends ExceptionHandler
     ];
 
     /**
-     * Register the exception handling callbacks for the application.
+     * Registra los callbacks de manejo de excepciones de la aplicación.
      */
     public function register(): void
     {

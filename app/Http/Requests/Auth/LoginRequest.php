@@ -16,7 +16,7 @@ use App\Models\User;
 class LoginRequest extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * Determina si el usuario está autorizado para hacer esta petición.
      */
     public function authorize(): bool
     {
@@ -24,7 +24,7 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
+     * Obtiene las reglas de validación aplicables a la petición.
      *
      * @return array<string, \Illuminate\Contracts\Validation\Rule|array|string>
      */
@@ -37,7 +37,7 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Attempt to authenticate the request's credentials.
+     * Intenta autenticar las credenciales de la petición.
      *
      * @throws \Illuminate\Validation\ValidationException
      */
@@ -104,7 +104,7 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Ensure the login request is not rate limited.
+     * Asegura que la petición de login no haya excedido el límite de intentos.
      *
      * @throws \Illuminate\Validation\ValidationException
      */
@@ -134,7 +134,7 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Get the rate limiting throttle key for the request.
+     * Obtiene la clave usada para limitar intentos de login.
      */
     public function throttleKey(): string
     {

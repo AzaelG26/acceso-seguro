@@ -10,6 +10,12 @@ use Illuminate\View\View;
 
 class AuditLogController extends Controller
 {
+    /**
+     * Muestra una lista paginada de registros de auditoría.
+     *
+     * Permite filtrar por evento y buscar por descripción, IP, nombre de usuario
+     * o correo cuando esas columnas existen en el esquema actual.
+     */
     public function index(Request $request): View
     {
         $timestampColumn = $this->timestampColumn();
@@ -57,6 +63,9 @@ class AuditLogController extends Controller
         return view('admin.audit.index', compact('logs', 'events', 'timestampColumn'));
     }
 
+    /**
+     * Muestra el detalle completo de un registro de auditoría.
+     */
     public function show(AuditLog $auditLog): View
     {
         $auditLog->load('user');
@@ -65,6 +74,9 @@ class AuditLogController extends Controller
         return view('admin.audit.show', compact('auditLog', 'timestampColumn'));
     }
 
+    /**
+     * Muestra contadores resumidos de la actividad reciente de auditoría.
+     */
     public function statistics(): View
     {
         $timestampColumn = $this->timestampColumn();
@@ -91,6 +103,12 @@ class AuditLogController extends Controller
         return view('admin.audit.statistics', compact('totalsByEvent', 'recentLoginFailures', 'todayTotal'));
     }
 
+    /**
+     * Obtiene la columna de fecha más segura para ordenar los registros.
+     *
+     * Las tablas de auditoría antiguas pueden no tener occurred_at, así que se
+     * usa created_at como respaldo hasta sincronizar el esquema.
+     */
     private function timestampColumn(): string
     {
         return Schema::hasColumn('audit_logs', 'occurred_at') ? 'occurred_at' : 'created_at';

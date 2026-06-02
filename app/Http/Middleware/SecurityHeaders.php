@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 class SecurityHeaders
 {
     /**
-     * Handle an incoming request.
+     * Procesa una petición entrante y agrega encabezados de seguridad.
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */

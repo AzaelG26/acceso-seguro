@@ -7,9 +7,9 @@ use Illuminate\Foundation\Http\Kernel as HttpKernel;
 class Kernel extends HttpKernel
 {
     /**
-     * The application's global HTTP middleware stack.
+     * Pila global de middlewares HTTP de la aplicación.
      *
-     * These middleware are run during every request to your application.
+     * Estos middlewares se ejecutan en cada petición a la aplicación.
      *
      * @var array<int, class-string|string>
      */
@@ -25,7 +25,7 @@ class Kernel extends HttpKernel
     ];
 
     /**
-     * The application's route middleware groups.
+     * Grupos de middlewares de rutas de la aplicación.
      *
      * @var array<string, array<int, class-string|string>>
      */
@@ -48,9 +48,9 @@ class Kernel extends HttpKernel
     ];
 
     /**
-     * The application's middleware aliases.
+     * Alias de middlewares de la aplicación.
      *
-     * Aliases may be used instead of class names to conveniently assign middleware to routes and groups.
+     * Los alias permiten asignar middlewares a rutas y grupos de forma conveniente.
      *
      * @var array<string, class-string|string>
      */

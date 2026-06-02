@@ -6,6 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Sincroniza tablas de auditoría parcialmente migradas con el esquema esperado.
+     */
     public function up(): void
     {
         if (! Schema::hasTable('audit_logs')) {
@@ -43,6 +46,9 @@ return new class extends Migration
         });
     }
 
+    /**
+     * Esta migración solo repara diferencias de esquema y no elimina columnas.
+     */
     public function down(): void
     {
         //

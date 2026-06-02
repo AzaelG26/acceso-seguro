@@ -9,7 +9,7 @@ use Database\Seeders\UserSeeder;
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Seed the application's database.
+     * Llena la base de datos de la aplicación.
      */
     public function run(): void
     {

@@ -17,7 +17,7 @@ use Illuminate\View\View;
 class RegisteredUserController extends Controller
 {
     /**
-     * Display the registration view.
+     * Muestra la vista de registro.
      */
     public function create(): View
     {
@@ -25,10 +25,11 @@ class RegisteredUserController extends Controller
     }
 
     /**
-     * Handle an incoming registration request.
+     * Procesa una petición entrante de registro.
      *
-     * All users register as 'guest' by default.
-     * Role elevation is handled by an administrator.
+     * Todos los usuarios se registran como 'guest' por defecto.
+     * La elevación de rol la gestiona un administrador.
+     *
      * @throws \Illuminate\Validation\ValidationException
      */
     public function store(Request $request): RedirectResponse

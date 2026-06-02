@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Log;
 class TotpController extends Controller
 {
     /**
-     * Show the TOTP setup view (QR Code).
+     * Muestra la vista de configuración TOTP con código QR.
      */
     public function setup()
     {
@@ -25,20 +25,20 @@ class TotpController extends Controller
 
         $user = User::findOrFail(session('auth.id'));
 
-        // If the user already has a secret, they shouldn't be here.
+        // Si el usuario ya tiene secreto, no debería estar en esta vista.
         if ($user->google2fa_secret) {
             return redirect()->route('totp.show');
         }
 
         $google2fa = new Google2FA();
         
-        // Generate a new secret
+        // Genera un nuevo secreto.
         $secret = $google2fa->generateSecretKey();
         
-        // Store the secret in session until it's confirmed
+        // Guarda el secreto en sesión hasta confirmarlo.
         session(['totp_setup_secret' => $secret]);
 
-        // Generate the QR image using the QR Code extended library
+        // Genera la imagen QR usando la librería extendida.
         $qrImage = $google2fa->getQRCodeInline(
             config('app.name'),
             $user->email,
@@ -49,7 +49,10 @@ class TotpController extends Controller
     }
 
     /**
-     * Confirm the setup by validating the first code.
+     * Confirma la configuración validando el primer código TOTP.
+     *
+     * Si el código es válido, guarda el secreto cifrado, finaliza el inicio
+     * de sesión y registra el resultado en auditoría.
      */
     public function confirmSetup(Request $request)
     {
@@ -71,14 +74,14 @@ class TotpController extends Controller
         $valid = $google2fa->verifyKey($secret, $request->totp);
 
         if ($valid) {
-            // Save the secret to the user
+            // Guarda el secreto en el usuario.
             $user->google2fa_secret = encrypt($secret);
             $user->save();
 
-            // Clear setup session
+            // Limpia la sesión de configuración.
             session()->forget('totp_setup_secret');
 
-            // Log the user in
+            // Inicia sesión al usuario.
             $remember = session('auth.remember');
             session()->forget(['auth.id', 'auth.remember', 'auth.2fa_passed']);
 
@@ -116,7 +119,7 @@ class TotpController extends Controller
     }
 
     /**
-     * Show the TOTP verification form for login.
+     * Muestra el formulario de verificación TOTP para iniciar sesión.
      */
     public function show()
     {
@@ -126,7 +129,7 @@ class TotpController extends Controller
 
         $user = User::findOrFail(session('auth.id'));
 
-        // If the user doesn't have a secret configured yet, redirect to setup.
+        // Si el usuario aún no tiene secreto configurado, redirige a configuración.
         if (!$user->google2fa_secret) {
             return redirect()->route('totp.setup');
         }
@@ -135,7 +138,10 @@ class TotpController extends Controller
     }
 
     /**
-     * Verify the TOTP code and login.
+     * Verifica el código TOTP e inicia sesión.
+     *
+     * Una verificación exitosa completa el flujo admin y los intentos fallidos
+     * se registran para visibilidad en auditoría.
      */
     public function verify(Request $request)
     {

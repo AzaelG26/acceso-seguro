@@ -14,8 +14,9 @@ use Illuminate\Support\Facades\Mail;
 class OtpController extends Controller
 {
     /**
-     *  Show the OTP verification form
-     *  If there is no authentication session in progress, redirect to login.
+     * Muestra el formulario de verificación OTP.
+     *
+     * Si no hay una sesión de autenticación en progreso, redirige al login.
      */
     public function show () {
         if (!session('auth.id')){
@@ -25,8 +26,9 @@ class OtpController extends Controller
     }
 
     /**
-     * Generate and send a 6-digit OTP code to the user's email.
-     * The code is stored hashed with bcrypt and expires in 10 minutes.
+     * Genera y envía un código OTP de 6 dígitos al correo del usuario.
+     *
+     * El código se guarda cifrado con bcrypt y expira en 10 minutos.
      */
     public function send(User $user): void
     {
@@ -43,16 +45,15 @@ class OtpController extends Controller
     }
 
     /**
-     * Verify the OTP code entered by the user.
+     * Verifica el código OTP ingresado por el usuario.
      *
-     * Flow:
-     * 1. Validate that the code has 6 digits.
-     * 2. Verify that it has not expired.
-     * 3. Compare the code against the stored hash.
-     * 4. For admin: verify if the IP is known.
-     *    - Unknown IP → send email with signed links to approve/reject.
-     *    - Known IP → direct login.
-     * 5. For user: direct login after successful OTP.
+     * Flujo:
+     * 1. Valida que el código tenga 6 dígitos.
+     * 2. Verifica que el código no haya expirado.
+     * 3. Compara el código contra el hash guardado.
+     * 4. Para admin: marca el OTP por correo como aprobado y continúa a TOTP.
+     * 5. Para usuario: inicia sesión después de un OTP correcto.
+     * 6. Registra cada resultado relevante en auditoría.
      */
     public function verify(Request $request)
     {
@@ -60,7 +61,7 @@ class OtpController extends Controller
 
         $user = User::findOrFail(session('auth.id'));
 
-        // Check OTP expiration
+        // Verifica la expiración del OTP.
         if (!$user->otp_expires_at || now()->isAfter($user->otp_expires_at)) {
             AuditLog::record('otp_expired', 'Intentó usar un código OTP expirado', $request, [
                 'user_id' => $user->id,
@@ -70,7 +71,7 @@ class OtpController extends Controller
             return back()->withErrors(['otp' => 'El código expiró.']);
         }
 
-        // Verify the code is correct
+        // Verifica que el código sea correcto.
         if (!password_verify($request->otp, $user->otp_code)) {
             Log::warning('OTP fallido', ['email' => $user->email, 'ip' => $request->ip()]);
             AuditLog::record('otp_failed', 'Ingresó un código OTP incorrecto', $request, [
@@ -81,12 +82,12 @@ class OtpController extends Controller
             return back()->withErrors(['otp' => 'Código incorrecto.']);
         }
 
-        // Invalidate the OTP after use (one-time use)
+        // Invalida el OTP después de usarlo una sola vez.
         $user->update(['otp_code' => null, 'otp_expires_at' => null]);
 
-        // Third factor for admin: TOTP (Google Authenticator)
+        // Tercer factor para admin: TOTP con Google Authenticator.
         if ($user->isAdmin()) {
-            // Mark that the 2FA (Email OTP) has been passed
+            // Marca que el 2FA por correo fue aprobado.
             session(['auth.2fa_passed' => true]);
 
             AuditLog::record('otp_success', 'Admin validó OTP y pasó al flujo TOTP', $request, [
@@ -95,7 +96,7 @@ class OtpController extends Controller
                 'role' => $user->role,
             ]);
 
-            // Redirect to the 3FA flow (TOTP)
+            // Redirige al flujo de 3FA con TOTP.
             return redirect()->route('totp.show');
         }
 
@@ -105,7 +106,7 @@ class OtpController extends Controller
         Auth::login($user, $remember);
         $request->session()->regenerate();
 
-        // Update the user's known IP
+        // Actualiza la IP conocida del usuario.
         $user->update(['last_known_ip' => $request->ip()]);
 
         Log::info('OTP exitoso', ['email' => $user->email, 'ip' => $request->ip()]);

@@ -9,6 +9,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AuditUserActivity
 {
+    /**
+     * Registra acciones de escritura autenticadas sin auditar el panel de auditoría.
+     */
     public function handle(Request $request, Closure $next): Response
     {
         $shouldRecord = $request->user()
@@ -26,6 +29,9 @@ class AuditUserActivity
         return $next($request);
     }
 
+    /**
+     * Traduce rutas conocidas a descripciones legibles para auditoría.
+     */
     private function descriptionFor(Request $request): string
     {
         return match ($request->route()?->getName()) {

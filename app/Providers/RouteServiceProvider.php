@@ -11,16 +11,16 @@ use Illuminate\Support\Facades\Route;
 class RouteServiceProvider extends ServiceProvider
 {
     /**
-     * The path to your application's "home" route.
+     * Ruta "home" de la aplicación.
      *
-     * Typically, users are redirected here after authentication.
+     * Normalmente los usuarios se redirigen aquí después de autenticarse.
      *
      * @var string
      */
     public const HOME = '/dashboard';
 
     /**
-     * Define your route model bindings, pattern filters, and other route configuration.
+     * Define bindings de modelos, filtros de patrones y configuración de rutas.
      */
     public function boot(): void
     {
