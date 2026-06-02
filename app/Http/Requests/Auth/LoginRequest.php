@@ -104,6 +104,13 @@ class LoginRequest extends FormRequest
             return;
         }
 
+        Log::warning('Rate limit reached', [
+            'event'     => 'AUTH_RATE_LIMIT',
+            'email'     => $this->email,
+            'ip'        => $this->ip(),
+            'timestamp' => now(),
+        ]);
+
         event(new Lockout($this));
 
         $seconds = RateLimiter::availableIn($this->throttleKey());
