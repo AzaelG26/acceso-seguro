@@ -154,7 +154,7 @@
                         <td class="whitespace-nowrap px-6 py-4 text-right">
                             <a
                                 href="{{ route('admin.audit.show', $log) }}"
-                                class="inline-flex items-center rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-100 dark:border-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300 dark:hover:bg-indigo-900/50">
+                                class="inline-flex items-center rounded-lg border bg-gray-50 dark:bg-gray-900 dark:text-gray-300 border-gray-200 dark:border-gray-700 shadow-sm dark:shadow-gray-900/50 px-3 py-2 text-xs font-semibold text-indigo-700 transition ">
                                 Ver detalle
                             </a>
                         </td>
