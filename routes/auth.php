@@ -16,16 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Cache\RateLimiting\Limit;
 
 
-RateLimiter::for('register', function (Request $request) {
-    return Limit::perMinute(3)->by($request->ip());
-});
-
-RateLimiter::for('otp', function (Request $request) {
-    return Limit::perMinute(5)->by(session('auth.id') . '|' . $request->ip());
-});
-
-
-
+// Rate Limiters are defined in RouteServiceProvider
 
 Route::middleware('guest')->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])
