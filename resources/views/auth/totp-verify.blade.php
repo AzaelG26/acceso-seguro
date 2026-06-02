@@ -12,6 +12,7 @@
             <x-text-input id="totp" class="block mt-1 w-full tracking-widest text-center text-lg"
                 type="text"
                 name="totp"
+                :value="old('totp')"
                 maxlength="6"
                 inputmode="numeric"
                 autofocus

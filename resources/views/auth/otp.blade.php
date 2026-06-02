@@ -11,6 +11,7 @@
             <x-text-input id="otp" class="block mt-1 w-full tracking-widest text-center text-lg"
                 type="text"
                 name="otp"
+                :value="old('otp')"
                 maxlength="6"
                 inputmode="numeric"
                 autofocus
