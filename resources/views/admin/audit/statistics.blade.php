@@ -5,7 +5,7 @@
                 {{ __('Estadísticas de auditoría') }}
             </h2>
 
-            <a href="{{ route('admin.audit.index') }}" class="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
+            <a href="{{ route('admin.audit.index') }}" class="text-sm font-medium text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 px-4 py-2 rounded-2xl">
                 Ver registros
             </a>
         </div>
