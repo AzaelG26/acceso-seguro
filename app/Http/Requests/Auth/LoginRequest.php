@@ -61,7 +61,7 @@ class LoginRequest extends FormRequest
 
 
         if (!$user || ! Hash::check($this->password, $user->password)) {
-            RateLimiter::hit($this->throttleKey());
+            RateLimiter::hit($this->throttleKey(), 300);
 
             Log::warning('Login failed', [
                 'event'     => 'AUTH_LOGIN_FAILED',
@@ -137,12 +137,10 @@ class LoginRequest extends FormRequest
 
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
-        throw ValidationException::withMessages([
-            'email' => trans('auth.throttle', [
-                'seconds' => $seconds,
-                'minutes' => ceil($seconds / 60),
-            ]),
-        ]);
+        abort(429, trans('auth.throttle', [
+            'seconds' => $seconds,
+            'minutes' => ceil($seconds / 60),
+        ]));
     }
 
     /**

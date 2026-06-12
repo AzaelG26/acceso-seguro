@@ -12,7 +12,7 @@
         <!-- Email Address -->
         <div class="mt-4">
             <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')"  autocomplete="username" />
+            <x-text-input id="email" class="block mt-1 w-full" type="text" name="email" :value="old('email')"  autocomplete="username" />
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
@@ -132,7 +132,7 @@
                     showError(confirmInput, 'Confirma tu contraseña.');
                     isValid = false;
                 } else if (confirmInput.value !== passVal) {
-                    showError(confirmInput, 'Las contraseñas no coinciden.');
+                    confirmInput.classList.add('border-red-500');
                     isValid = false;
                 }
 
