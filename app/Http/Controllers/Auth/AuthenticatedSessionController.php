@@ -12,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 
@@ -66,6 +67,20 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $user = Auth::guard('web')->user();
+        if ($user) {
+            Log::info('User logged out', [
+                'event' => 'AUTH_LOGOUT',
+                'email' => $user->email,
+                'ip'    => $request->ip(),
+                'timestamp' => now(),
+            ]);
+            AuditLog::record('logout', 'Cerró sesión', $request, [
+                'user_id' => $user->id,
+                'email' => $user->email
+            ]);
+        }
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

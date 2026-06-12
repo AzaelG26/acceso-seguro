@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use App\Rules\Recaptcha;
 
@@ -74,6 +75,13 @@ class RegisteredUserController extends Controller
         AuditLog::record('user_registered', 'Se registró como nuevo usuario', $request, [
             'user_id' => $user->id,
             'email' => $user->email,
+        ]);
+
+        Log::info('New user registered', [
+            'event' => 'USER_REGISTERED',
+            'email' => $user->email,
+            'ip'    => $request->ip(),
+            'timestamp' => now(),
         ]);
 
         return redirect(RouteServiceProvider::HOME);
