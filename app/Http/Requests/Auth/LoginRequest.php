@@ -12,6 +12,7 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Hash;
 use App\Models\AuditLog;
 use App\Models\User;
+use App\Rules\Recaptcha;
 
 class LoginRequest extends FormRequest
 {
@@ -24,6 +25,16 @@ class LoginRequest extends FormRequest
     }
 
     /**
+     * Prepara y sanitiza los datos antes de la validación.
+     */
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'email' => strip_tags($this->email),
+        ]);
+    }
+
+    /**
      * Obtiene las reglas de validación aplicables a la petición.
      *
      * @return array<string, \Illuminate\Contracts\Validation\Rule|array|string>
@@ -33,6 +44,7 @@ class LoginRequest extends FormRequest
         return [
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
+            'g-recaptcha-response' => ['required', new Recaptcha],
         ];
     }
 

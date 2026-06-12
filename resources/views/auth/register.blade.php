@@ -5,14 +5,14 @@
         <!-- Name -->
         <div>
             <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
+            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')"  autofocus autocomplete="name" />
             <x-input-error :messages="$errors->get('name')" class="mt-2" />
         </div>
 
         <!-- Email Address -->
         <div class="mt-4">
             <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
+            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')"  autocomplete="username" />
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
@@ -23,7 +23,7 @@
             <x-text-input id="password" class="block mt-1 w-full"
                             type="password"
                             name="password"
-                            required autocomplete="new-password" />
+                             autocomplete="new-password" />
 
             @if($errors->has('password'))
                 <p class="mt-2 text-sm text-red-600 dark:text-red-400">
@@ -48,13 +48,20 @@
 
             <x-text-input id="password_confirmation" class="block mt-1 w-full"
                             type="password"
-                            name="password_confirmation" required autocomplete="new-password" />
+                            name="password_confirmation"  autocomplete="new-password" />
 
             <p id="confirm-match" class="mt-1 text-xs"></p>
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>
 
 
+
+        <div class="mt-4 flex flex-col items-center">
+            <div>
+                <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
+                <x-input-error :messages="$errors->get('g-recaptcha-response')" class="mt-2" />
+            </div>
+        </div>
 
         <div class="flex items-center justify-end mt-4">
             <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" href="{{ route('login') }}">
@@ -68,6 +75,93 @@
     </form>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function(e) {
+                let isValid = true;
+                
+                form.querySelectorAll('.js-error-msg').forEach(el => el.remove());
+                form.querySelectorAll('input').forEach(el => el.classList.remove('border-red-500'));
+
+                // Validar Nombre
+                const nameInput = document.getElementById('name');
+                const nameVal = nameInput.value.replace(/<[^>]*>?/gm, '').trim();
+                nameInput.value = nameVal;
+                if (nameVal === '') {
+                    showError(nameInput, 'El nombre es obligatorio.');
+                    isValid = false;
+                }
+
+                // Validar Email
+                const emailInput = document.getElementById('email');
+                const emailVal = emailInput.value.replace(/<[^>]*>?/gm, '').trim();
+                emailInput.value = emailVal;
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                
+                if (emailVal === '') {
+                    showError(emailInput, 'El correo electrónico es obligatorio.');
+                    isValid = false;
+                } else if (!emailRegex.test(emailVal)) {
+                    showError(emailInput, 'Ingresa un formato de correo electrónico válido.');
+                    isValid = false;
+                }
+
+                // Validar Password
+                const passwordInput = document.getElementById('password');
+                const passVal = passwordInput.value;
+                if (passVal === '') {
+                    showError(passwordInput, 'La contraseña es obligatoria.');
+                    isValid = false;
+                } else {
+                    let passErrors = [];
+                    if (passVal.length < 12) passErrors.push('mínimo 12 caracteres');
+                    if (!/[A-Z]/.test(passVal)) passErrors.push('una mayúscula');
+                    if (!/[a-z]/.test(passVal)) passErrors.push('una minúscula');
+                    if (!/[0-9]/.test(passVal)) passErrors.push('un número');
+                    if (!/[^a-zA-Z0-9]/.test(passVal)) passErrors.push('un símbolo');
+                    
+                    if (passErrors.length > 0) {
+                        showError(passwordInput, 'Debe contener: ' + passErrors.join(', ') + '.');
+                        isValid = false;
+                    }
+                }
+
+                // Validar Confirmación
+                const confirmInput = document.getElementById('password_confirmation');
+                if (confirmInput.value === '') {
+                    showError(confirmInput, 'Confirma tu contraseña.');
+                    isValid = false;
+                } else if (confirmInput.value !== passVal) {
+                    showError(confirmInput, 'Las contraseñas no coinciden.');
+                    isValid = false;
+                }
+
+                // Validar reCAPTCHA
+                const recaptchaResponse = document.querySelector('[name="g-recaptcha-response"]');
+                if (recaptchaResponse && recaptchaResponse.value === '') {
+                    const recaptchaContainer = document.querySelector('.g-recaptcha');
+                    if (recaptchaContainer) {
+                        showError(recaptchaContainer.parentElement, 'Por favor, completa el reCAPTCHA.');
+                    }
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+                }
+            });
+
+            function showError(input, message) {
+                input.classList.add('border-red-500');
+                let ul = document.createElement('ul');
+                ul.className = 'mt-2 text-sm text-red-600 dark:text-red-400 js-error-msg';
+                let li = document.createElement('li');
+                li.textContent = message;
+                ul.appendChild(li);
+                input.parentNode.insertBefore(ul, input.nextSibling);
+            }
+        });
+
         document.getElementById('password').addEventListener('input', function() {
             const val = this.value;
 
@@ -102,6 +196,12 @@
                 el.className = 'text-red-500 dark:text-red-400 text-xs mt-1';
             }
         });
-
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', function() {
+                this.classList.remove('border-red-500');
+                const err = this.parentNode.querySelector('.js-error-msg');
+                if (err) err.remove();
+            });
+        });
     </script>
 </x-guest-layout>

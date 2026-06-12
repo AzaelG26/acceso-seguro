@@ -13,11 +13,14 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
+use App\Rules\Recaptcha;
 
 class RegisteredUserController extends Controller
 {
     /**
      * Muestra la vista de registro.
+     *
+     * @return \Illuminate\View\View Retorna la vista auth.register
      */
     public function create(): View
     {
@@ -25,15 +28,25 @@ class RegisteredUserController extends Controller
     }
 
     /**
-     * Procesa una petición entrante de registro.
+     * Procesa una petición entrante de registro de un nuevo usuario.
      *
-     * Todos los usuarios se registran como 'guest' por defecto.
-     * La elevación de rol la gestiona un administrador.
+     * Sanitiza el nombre y correo eliminando etiquetas HTML para prevenir XSS.
+     * Valida los campos (con estrictas reglas de contraseña) e inserta el 
+     * nuevo usuario con el rol 'guest' por defecto. Al finalizar, registra
+     * la acción en la bitácora de auditoría.
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @param  \Illuminate\Http\Request  $request Petición con datos de registro
+     * @return \Illuminate\Http\RedirectResponse Redirección al Dashboard
+     * @throws \Illuminate\Validation\ValidationException Si las reglas de validación fallan
      */
     public function store(Request $request): RedirectResponse
     {
+        // Sanitización explícita antes de validar (Back-end)
+        $request->merge([
+            'name' => strip_tags($request->name),
+            'email' => strip_tags($request->email),
+        ]);
+
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
@@ -44,6 +57,7 @@ class RegisteredUserController extends Controller
                 ->symbols()
                 ->uncompromised(),
             ],
+            'g-recaptcha-response' => ['required', new Recaptcha],
         ]);
 
         $user = User::create([
@@ -52,7 +66,6 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
             'role'     => 'guest',
         ]);
-
 
         event(new Registered($user));
 
