@@ -19,6 +19,8 @@ class AuthenticatedSessionController extends Controller
 {
     /**
      * Muestra la vista de inicio de sesión.
+     *
+     * @return \Illuminate\View\View Retorna la vista auth.login
      */
     public function create(): View
     {
@@ -26,7 +28,15 @@ class AuthenticatedSessionController extends Controller
     }
 
     /**
-     * Procesa una petición entrante de autenticación.
+     * Procesa una petición entrante de autenticación (Login).
+     *
+     * Valida las credenciales, regenera la sesión para evitar Session Fixation,
+     * verifica si el usuario tiene doble factor (OTP) activo, y finalmente
+     * registra el evento en la auditoría si el inicio fue exitoso.
+     *
+     * @param  \App\Http\Requests\Auth\LoginRequest  $request Petición con datos de login
+     * @return \Illuminate\Http\RedirectResponse Redirección al Home o a la vista OTP
+     * @throws \Illuminate\Validation\ValidationException Si la validación falla
      */
     public function store(LoginRequest $request): RedirectResponse
     {
@@ -46,7 +56,13 @@ class AuthenticatedSessionController extends Controller
     }
 
     /**
-     * Destruye la sesión autenticada actual.
+     * Destruye la sesión autenticada actual (Logout).
+     *
+     * Invalida la sesión actual, regenera el token CSRF para evitar ataques
+     * y elimina las cookies explícitamente del navegador web.
+     *
+     * @param  \Illuminate\Http\Request  $request Petición HTTP actual
+     * @return \Illuminate\Http\RedirectResponse Redirección a la ruta raíz ('/')
      */
     public function destroy(Request $request): RedirectResponse
     {

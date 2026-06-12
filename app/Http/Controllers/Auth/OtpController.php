@@ -14,9 +14,12 @@ use Illuminate\Support\Facades\Mail;
 class OtpController extends Controller
 {
     /**
-     * Muestra el formulario de verificación OTP.
+     * Muestra el formulario de verificación OTP (Segundo factor por correo).
      *
-     * Si no hay una sesión de autenticación en progreso, redirige al login.
+     * Si no hay una sesión de autenticación parcial en progreso, redirige al login
+     * para evitar accesos directos no autorizados.
+     *
+     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse Retorna la vista o redirecciona al login
      */
     public function show () {
         if (!session('auth.id')){
@@ -28,7 +31,12 @@ class OtpController extends Controller
     /**
      * Genera y envía un código OTP de 6 dígitos al correo del usuario.
      *
-     * El código se guarda cifrado con bcrypt y expira en 10 minutos.
+     * El código se guarda cifrado con bcrypt en la base de datos para prevenir 
+     * su robo directo y expira exactamente en 10 minutos por razones de seguridad.
+     *
+     * @param \App\Models\User $user Modelo del usuario al que se le enviará el OTP
+     * @return void
+     * @throws \Exception Si falla la generación del número aleatorio
      */
     public function send(User $user): void
     {
@@ -47,13 +55,14 @@ class OtpController extends Controller
     /**
      * Verifica el código OTP ingresado por el usuario.
      *
-     * Flujo:
-     * 1. Valida que el código tenga 6 dígitos.
-     * 2. Verifica que el código no haya expirado.
-     * 3. Compara el código contra el hash guardado.
-     * 4. Para admin: marca el OTP por correo como aprobado y continúa a TOTP.
-     * 5. Para usuario: inicia sesión después de un OTP correcto.
-     * 6. Registra cada resultado relevante en auditoría.
+     * Valida formato, comprueba que no esté expirado y verifica el hash.
+     * Si el usuario es administrador, lo pasa a la fase TOTP.
+     * Si es usuario normal, finaliza el login y regenera la sesión.
+     * Invalida el OTP después de usarse.
+     *
+     * @param  \Illuminate\Http\Request  $request Petición HTTP con el código OTP
+     * @return \Illuminate\Http\RedirectResponse Redirección al Dashboard o al paso TOTP
+     * @throws \Illuminate\Validation\ValidationException Si el formato del OTP es incorrecto
      */
     public function verify(Request $request)
     {

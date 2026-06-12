@@ -16,6 +16,11 @@ class TotpController extends Controller
 {
     /**
      * Muestra la vista de configuración TOTP con código QR.
+     *
+     * Genera un nuevo secreto si el usuario no tiene uno, y muestra
+     * un código QR en línea usando la librería PragmaRX para Google Authenticator.
+     *
+     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse Retorna la vista o redirige al login si falla la validación previa
      */
     public function setup()
     {
@@ -49,10 +54,15 @@ class TotpController extends Controller
     }
 
     /**
-     * Confirma la configuración validando el primer código TOTP.
+     * Confirma la configuración validando el primer código TOTP generado por la app móvil.
      *
-     * Si el código es válido, guarda el secreto cifrado, finaliza el inicio
-     * de sesión y registra el resultado en auditoría.
+     * Si el código es válido, guarda el secreto cifrado permanentemente en la base de datos,
+     * finaliza el inicio de sesión, regenera la sesión para evitar ataques,
+     * y registra el resultado en la auditoría.
+     *
+     * @param  \Illuminate\Http\Request  $request Petición HTTP con el código ingresado
+     * @return \Illuminate\Http\RedirectResponse Redirección al Dashboard o atrás con errores
+     * @throws \Illuminate\Validation\ValidationException Si la validación falla
      */
     public function confirmSetup(Request $request)
     {
@@ -119,7 +129,11 @@ class TotpController extends Controller
     }
 
     /**
-     * Muestra el formulario de verificación TOTP para iniciar sesión.
+     * Muestra el formulario de verificación TOTP para administradores al iniciar sesión.
+     *
+     * Si no se han pasado las validaciones previas (contraseña y OTP), redirige.
+     *
+     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
      */
     public function show()
     {
@@ -138,10 +152,15 @@ class TotpController extends Controller
     }
 
     /**
-     * Verifica el código TOTP e inicia sesión.
+     * Verifica el código TOTP móvil e inicia sesión finalmente.
      *
-     * Una verificación exitosa completa el flujo admin y los intentos fallidos
-     * se registran para visibilidad en auditoría.
+     * Desencripta el secreto guardado, usa la librería para validar el tiempo
+     * actual contra el código ingresado. En caso de éxito completa el flujo 3FA
+     * loggeando al administrador.
+     *
+     * @param  \Illuminate\Http\Request  $request Petición con el token TOTP
+     * @return \Illuminate\Http\RedirectResponse Redirección al Dashboard o al formulario con error
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function verify(Request $request)
     {
