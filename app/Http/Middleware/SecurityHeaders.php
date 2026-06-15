@@ -29,7 +29,7 @@ class SecurityHeaders
         // No enviar referrer a otros dominios
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
-        $response->headers->set('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.bunny.net https://fonts.googleapis.com; font-src 'self' https://fonts.bunny.net; frame-src 'self' https://www.google.com;");
+        $response->headers->set('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.bunny.net https://fonts.googleapis.com; font-src 'self' https://fonts.bunny.net; frame-src 'self' https://www.google.com; connect-src 'self' https://www.google.com https://www.gstatic.com;");
 
         // Forzar siempre conexiones HTTPS (HSTS) - 1 año de duración
         $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
