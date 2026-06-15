@@ -5,6 +5,7 @@ namespace App\Rules;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class Recaptcha implements ValidationRule
 {
@@ -15,14 +16,23 @@ class Recaptcha implements ValidationRule
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        // Enviar la llave secreta y el token de respuesta del usuario a Google
-        $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
-            'secret' => config('services.recaptcha.secret_key'),
-            'response' => $value,
-        ]);
-
-        if (! $response->json('success')) {
-            $fail('Por favor, completa el reCAPTCHA para verificar que eres humano.');
+        try {
+            $response = Http::asForm()->post(
+                    'https://www.google.com/recaptcha/api/siteverify',
+                    [
+                        'secret' => config('services.recaptcha.secret'),
+                        'response' => $value,
+                        'remoteip' => request()->ip(),
+                    ]
+                );
+            if (!$response->json('success')) {
+                $fail('reCAPTCHA inválido');
+            }
+        } catch (\Throwable $e) {
+            Log::warning('reCAPTCHA service unavailable', [
+                'error' => $e->getMessage(),
+            ]);
+            $fail('No se pudo validar reCAPTCHA, intenta más tarde');
         }
     }
 }
