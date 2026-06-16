@@ -14,8 +14,7 @@ class SecureDatabaseSessionHandler extends DatabaseSessionHandler
      * @param  string  $sessionId
      * @return bool
      */
-    #[\ReturnTypeWillChange]
-    public function destroy($sessionId)
+    public function destroy($sessionId): bool
     {
         $this->getQuery()->where('id', $sessionId)->update([
             'payload' => '',
@@ -34,8 +33,7 @@ class SecureDatabaseSessionHandler extends DatabaseSessionHandler
      * @param  int  $lifetime
      * @return int
      */
-    #[\ReturnTypeWillChange]
-    public function gc($lifetime)
+    public function gc($lifetime): int
     {
         return $this->getQuery()
             ->where('last_activity', '<=', time() - ($lifetime * 60))
