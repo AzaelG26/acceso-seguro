@@ -19,6 +19,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        \Illuminate\Support\Facades\Session::extend('secure-database', function ($app) {
+            $table = $app['config']['session.table'];
+            $lifetime = $app['config']['session.lifetime'];
+            $connection = $app['db']->connection($app['config']['session.connection']);
+
+            return new \App\Extensions\SecureDatabaseSessionHandler($connection, $table, $lifetime, $app);
+        });
     }
 }
