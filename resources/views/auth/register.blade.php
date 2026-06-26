@@ -94,9 +94,12 @@
 
                 // Validar Email
                 const emailInput = document.getElementById('email');
-                const emailVal = emailInput.value.replace(/<[^>]*>?/gm, '').trim();
+                // Sanitizar y forzar a minúsculas inmediatamente
+                const emailVal = emailInput.value.replace(/<[^>]*>?/gm, '').trim().toLowerCase();
                 emailInput.value = emailVal;
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                
+                // Regex más estricta (no permite puntos al final del nombre, ni dominios de 1 letra)
+                const emailRegex = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9]){1,}$/;
                 
                 if (emailVal === '') {
                     showError(emailInput, 'El correo electrónico es obligatorio.');
